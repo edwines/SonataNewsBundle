@@ -144,19 +144,25 @@ Installation
     imports:
         - { resource: sonata_news.yml }
 
-* Add a new context into your ``sonata_media.yml`` configuration::
+* Add a new context and change the resizer into your ``sonata_media.yml`` configuration::
 
 .. code-block:: yaml
 
-    news:
+    sonata_media:
+        contexts:
+            news:
+                providers:
+                    - sonata.media.provider.dailymotion
+                    - sonata.media.provider.youtube
+                    - sonata.media.provider.image
+        
+                formats:
+                    small: { width: 100 , height: 100, quality: 95}
+                    big:   { width: 500 , quality: 90}
+        
         providers:
-            - sonata.media.provider.dailymotion
-            - sonata.media.provider.youtube
-            - sonata.media.provider.image
-
-        formats:
-            small: { width: 150 , quality: 95}
-            big:   { width: 500 , quality: 90}
+            sonata.media.provider.image:
+                resizer: sonata.news.media.resizer
 
 * Define the text formatters available for your blog post::
 
