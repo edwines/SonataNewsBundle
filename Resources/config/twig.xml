@@ -10,6 +10,7 @@
 
             <argument type="service" id="router" />
             <argument type="service" id="sonata.news.manager.tag" />
+            <argument type="service" id="sonata.news.manager.category" />
             <argument type="service" id="sonata.news.blog" />
         </service>
     </services>
