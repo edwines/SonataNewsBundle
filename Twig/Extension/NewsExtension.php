@@ -13,6 +13,7 @@ namespace Sonata\NewsBundle\Twig\Extension;
 
 use Symfony\Component\Routing\Router;
 use Sonata\NewsBundle\Model\TagManagerInterface;
+use Sonata\NewsBundle\Model\CategoryManagerInterface;
 use Sonata\NewsBundle\Model\BlogInterface;
 use Sonata\NewsBundle\Model\PostInterface;
 
@@ -24,20 +25,27 @@ class NewsExtension extends \Twig_Extension
     private $router;
 
     /**
-     * @var CmsManagerSelectorInterface
+     * @var TagManagerInterface
      */
     private $tagManager;
+    
+    /**
+     * @var CategoryManagerInterface
+     */
+    private $categoryManager;
 
     /**
      * @param \Symfony\Component\Routing\Router $router
      * @param \Sonata\NewsBundle\Model\TagManagerInterface $tagManager
+     * @param \Sonata\NewsBundle\Model\CategoryManagerInterface $categoryManager
      * @param \Sonata\NewsBundle\Model\BlogInterface $blog
      */
-    public function __construct(Router $router, TagManagerInterface $tagManager, BlogInterface $blog)
+    public function __construct(Router $router, TagManagerInterface $tagManager, CategoryManagerInterface $categoryManager, BlogInterface $blog)
     {
-        $this->router       = $router;
-        $this->tagManager   = $tagManager;
-        $this->blog         = $blog;
+        $this->router           = $router;
+        $this->tagManager       = $tagManager;
+        $this->categoryManager  = $categoryManager;
+        $this->blog             = $blog;
     }
 
     /**
@@ -48,8 +56,10 @@ class NewsExtension extends \Twig_Extension
     public function getFunctions()
     {
         return array(
+            'sonata_news_permalink'    => new \Twig_Function_Method($this, 'generatePermalink'),
             'sonata_news_link_tag_rss' => new \Twig_Function_Method($this, 'renderTagRss', array('is_safe' => array('html'))),
-            'sonata_news_permalink'    => new \Twig_Function_Method($this, 'generatePermalink')
+            'sonata_news_cloud_tag' => new \Twig_Function_Method($this, 'renderTagCloud', array('is_safe' => array('html'))),
+            'sonata_news_cloud_category' => new \Twig_Function_Method($this, 'renderCategoryCloud', array('is_safe' => array('html')))
         );
     }
 
@@ -88,6 +98,38 @@ class NewsExtension extends \Twig_Extension
         return implode("\n", $rss);
     }
 
+    /**
+     * @return string
+     */
+    public function renderTagCloud()
+    {
+        $cloud = array();
+        foreach($this->tagManager->findBy(array('enabled' => true)) as $tag) {
+            $cloud[] = sprintf('<li><a href="%s" rel="tag">%s</a></li>',
+                $this->router->generate('sonata_news_tag', array('tag' => $tag->getSlug()), true),
+                $tag->getName()
+            );
+        }
+
+        return implode(" ", $cloud);
+    }
+    
+    /**
+     * @return string
+     */
+    public function renderCategoryCloud()
+    {
+        $cloud = array();
+        foreach($this->categoryManager->findBy(array('enabled' => true)) as $category) {
+            $cloud[] = sprintf('<li><a href="%s">%s</a></li>',
+                $this->router->generate('sonata_news_category', array('category' => $category->getSlug()), true),
+                $category->getName()
+            );
+        }
+
+        return implode(" ", $cloud);
+    }
+    
     /**
      * @param \Sonata\NewsBundle\Model\PostInterface $post
      * @return string|Exception

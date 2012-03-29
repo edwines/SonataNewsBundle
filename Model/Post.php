@@ -414,7 +414,7 @@ abstract class Post implements PostInterface
 
     public function isPublic()
     {
-        if (!$this->getEnabled()) {
+        if (!$this->getEnabled() || $this->getCategory() && !$this->getCategory()->getEnabled()) {
             return false;
         }
 
